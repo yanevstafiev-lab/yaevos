@@ -91,8 +91,17 @@ bot.command("help", ctx => {
   );
 });
 
-bot
-  .launch()
+console.log(`Токен: длина ${BOT_TOKEN.length} символов, начинается с "${BOT_TOKEN.slice(0, 6)}..."`);
+
+// Сначала простой одиночный запрос к Telegram (getMe) — он либо быстро
+// подтвердит, что токен рабочий и сеть до Telegram доходит, либо быстро
+// покажет ошибку. Только после этого запускаем длинный long polling.
+bot.telegram
+  .getMe()
+  .then(me => {
+    console.log(`Подключение к Telegram OK. Это бот @${me.username} (id ${me.id}).`);
+    return bot.launch();
+  })
   .then(() => console.log("Бот запущен (long polling)."))
   .catch(err => {
     // Раньше ошибка здесь тихо роняла весь процесс (Node убивает процесс при
