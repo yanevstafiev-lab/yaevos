@@ -91,7 +91,19 @@ bot.command("help", ctx => {
   );
 });
 
-bot.launch().then(() => console.log("Бот запущен (long polling)."));
+bot
+  .launch()
+  .then(() => console.log("Бот запущен (long polling)."))
+  .catch(err => {
+    // Раньше ошибка здесь тихо роняла весь процесс (Node убивает процесс при
+    // необработанном отклонении промиса) — контейнер уходил в бесконечный
+    // цикл рестартов без единого объяснения в логах. Теперь причина видна.
+    console.error("Не удалось запустить бота:", err.message);
+  });
+
+process.on("unhandledRejection", err => {
+  console.error("Необработанная ошибка:", err);
+});
 
 // Необязательный HTTP-эндпоинт — на случай, если Railway настроит health check по порту.
 if (process.env.PORT) {
